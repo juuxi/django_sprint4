@@ -140,3 +140,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LANGUAGE_CODE = 'ru-RU'
 
 CSRF_FAILURE_VIEW = 'pages.views.csrf_failure'
+
+LOGIN_REDIRECT_URL = 'blog:index' 

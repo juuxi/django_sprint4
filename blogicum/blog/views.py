@@ -2,10 +2,13 @@ from django.shortcuts import render, get_object_or_404
 from django.db.models import Q
 from django.http import Http404
 from django.utils import timezone
+from django.contrib.auth import get_user_model
 
 from .models import Category, Post
 
 from datetime import datetime
+
+User = get_user_model()
 
 
 def index(request):
@@ -41,3 +44,17 @@ def category_posts(request, category_slug):
                                     & Q(pub_date__lte=datetime.now()))
     context = {'category': category, 'post_list': post_list}
     return render(request, template, context)
+
+
+def view_profile(request, username):
+    template = 'blog/profile.html'
+    user_profile = get_object_or_404(User, username=username)
+    context = {'profile': user_profile}
+    return render(request, template, context)
+
+
+def create_post(request):
+    pass
+
+def edit_profile(request):
+    pass
