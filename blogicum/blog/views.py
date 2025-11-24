@@ -6,9 +6,9 @@ from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
 from django.urls import reverse_lazy
 from django.contrib.auth.decorators import login_required
-from django.views.generic import DetailView, DeleteView
+from django.views.generic import DeleteView
 
-from .models import Category, Post
+from .models import Category, Post, Comment
 from .forms import PostForm, CommentForm
 
 from datetime import datetime
@@ -39,6 +39,8 @@ def post_detail(request, id):
     if post.pub_date > timezone.now():
         raise Http404
     context = {'post': post}
+    context['form'] = CommentForm()
+    context['comments'] = Comment.objects.filter(post=post)
     return render(request, template, context)
 
 
@@ -95,30 +97,33 @@ def edit_post(request, pk):
                 post = form.save(commit=False)
                 post.author = request.user
                 post.save()
-                return redirect('blog:detail', pk=pk)
+                return redirect('blog:post_detail', pk=pk)
             
         form = PostForm(instance=post)
         context = {'form': form}
         return render(request, 'blog/create.html', context)
     
-    return redirect('blog:detail', pk=pk)
+    return redirect('blog:post_detail', pk=pk)
 
 
 @login_required
-def add_comment(request, pk):
-    post = get_object_or_404(Post, pk=pk)
+def add_comment(request, id):
+    post = get_object_or_404(Post, id=id)
     form = CommentForm(request.POST)
     if form.is_valid():
-        congratulation = form.save(commit=False)
-        congratulation.author = request.user
-        congratulation.post = post
-        congratulation.save()
-    context = {'form': form}
-    return render(request, 'includes/comments.html', context)
+        comment = form.save(commit=False)
+        comment.author = request.user
+        comment.post = post
+        comment.save()
+    return redirect('blog:post_detail', id=id)
 
 
-class PostDetailView(DetailView):
-    model = Post
+def edit_comment(request, id, pk):
+    pass
+
+
+def delete_comment(request, id, pk):
+    pass
 
 
 class PostDeleteView(DeleteView):

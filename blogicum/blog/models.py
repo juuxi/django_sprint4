@@ -82,7 +82,7 @@ class Post(models.Model):
 
 class Comment(models.Model):
     text = models.TextField('Текст коммнетария')
-    birthday = models.ForeignKey(
+    post = models.ForeignKey(
         Post, 
         on_delete=models.CASCADE,
         related_name='comments',
@@ -91,4 +91,4 @@ class Comment(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
 
     class Meta:
-        ordering = ('created_at',) 
+        ordering = ('created_at',)

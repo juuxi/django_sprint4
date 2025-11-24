@@ -13,7 +13,8 @@ urlpatterns = [
     path('<int:pk>/edit/', views.edit_post, name='edit_post'),
     path('<int:pk>/delete/', views.PostDeleteView.as_view(), name='delete_post'),
     path('', views.edit_profile, name='edit_profile'),
-    path('<int:pk>/', views.PostDetailView.as_view(), name='detail'),
-    path('<int:pk>/comment/', views.add_comment, name='add_comment'),
+    path('<int:id>/comment/', views.add_comment, name='add_comment'),
+    path('<int:id>/edit_comment/<int:pk>', views.edit_comment, name='edit_comment'),
+    path('<int:id>/delete_comment/<int:pk>', views.delete_comment, name='delete_comment'),
     path('<slug:category_slug>/', views.category_posts, name='category_posts'),
 ]
