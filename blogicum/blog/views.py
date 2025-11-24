@@ -1,13 +1,17 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q
 from django.http import Http404
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
+from django.urls import reverse_lazy
+from django.contrib.auth.decorators import login_required
 
 from .models import Category, Post
+from .forms import PostForm
 
 from datetime import datetime
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -69,8 +73,19 @@ def view_profile(request, username):
     return render(request, template, context)
 
 
-def create_post(request):
-    pass
+@login_required
+def create_post(request, pk=None):
+    form = PostForm(request.POST or None)
+    if form.is_valid():
+        post = form.save(commit=False)
+        post.author = request.user
+        if post.pub_date > timezone.now():
+            post.is_published = False
+        post.save()
+        return redirect('blog:profile', username=request.user.username)
+    context = {'form': form}
+    return render(request, 'blog/create.html', context)
+
 
 def edit_profile(request):
     pass
