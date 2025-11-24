@@ -8,7 +8,7 @@ from django.urls import reverse_lazy
 from django.contrib.auth.decorators import login_required
 
 from .models import Category, Post
-from .forms import PostForm
+from .forms import PostForm, CommentForm
 
 from datetime import datetime
 from django.utils import timezone
@@ -101,6 +101,18 @@ def edit_post(request, pk):
         return render(request, 'blog/create.html', context)
     
     return redirect('blog:detail', pk=pk)
+
+
+@login_required
+def add_comment(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+    form = CommentForm(request.POST)
+    if form.is_valid():
+        congratulation = form.save(commit=False)
+        congratulation.author = request.user
+        congratulation.post = post
+        congratulation.save()
+    return redirect('post:detail', pk=pk) 
 
 
 def edit_profile(request):
