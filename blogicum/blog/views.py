@@ -147,7 +147,9 @@ def delete_comment(request, id, pk):
 
 class PostDeleteView(DeleteView):
     model = Post
-    success_url = reverse_lazy('pages:homepage')
+    template_name = 'blog/create.html'
+    def get_success_url(self):
+        return reverse_lazy('blog:profile', kwargs={'username': self.request.user.username})
 
 
 def edit_profile(request):
