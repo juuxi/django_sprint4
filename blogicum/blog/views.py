@@ -70,9 +70,8 @@ def view_profile(request, username):
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    context = {'page_obj': page_obj}
+    context = {'page_obj': page_obj, 'profile': user_profile}
 
-    context['profile'] = user_profile
     return render(request, template, context)
 
 
@@ -119,11 +118,31 @@ def add_comment(request, id):
 
 
 def edit_comment(request, id, pk):
-    pass
+    post = get_object_or_404(Post, id=id)
+    comment = get_object_or_404(Comment, pk=pk)
+    if comment.author == request.user:
+        if request.POST:
+            form = CommentForm(request.POST, instance=comment)
+            if form.is_valid():
+                comment = form.save(commit=False)
+                comment.author = request.user
+                comment.post = post
+                comment.save()
+                return redirect('blog:post_detail', id=id)
+        form = CommentForm(instance=comment)
+        context = {'form': form, 'comment': comment}
+        return render(request, 'blog/comment.html', context)
+    return redirect('blog:post_detail', id=id)
 
 
 def delete_comment(request, id, pk):
-    pass
+    comment = get_object_or_404(Comment, pk=pk)
+    context = {'comment': comment}
+    if comment.author == request.user:
+        if request.method == 'POST':
+            comment.delete()
+            return redirect('blog:post_detail', id=id)
+    return render(request, 'blog/comment.html', context)
 
 
 class PostDeleteView(DeleteView):
