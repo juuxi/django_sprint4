@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
 from django.urls import reverse_lazy
 from django.contrib.auth.decorators import login_required
+from django.views.generic import DetailView, DeleteView
 
 from .models import Category, Post
 from .forms import PostForm, CommentForm
@@ -112,7 +113,17 @@ def add_comment(request, pk):
         congratulation.author = request.user
         congratulation.post = post
         congratulation.save()
-    return redirect('post:detail', pk=pk) 
+    context = {'form': form}
+    return render(request, 'includes/comments.html', context)
+
+
+class PostDetailView(DetailView):
+    model = Post
+
+
+class PostDeleteView(DeleteView):
+    model = Post
+    success_url = reverse_lazy('pages:homepage')
 
 
 def edit_profile(request):
