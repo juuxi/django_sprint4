@@ -87,22 +87,22 @@ def create_post(request, pk=None):
     return render(request, 'blog/create.html', context)
 
 
-def edit_post(request, pk):
-    post = get_object_or_404(Post, pk=pk)
+def edit_post(request, id):
+    post = get_object_or_404(Post, id=id)
     if post.author == request.user:
         if request.POST:
-            form = PostForm(request.POST)
+            form = PostForm(request.POST, instance=post)
             if form.is_valid():
                 post = form.save(commit=False)
                 post.author = request.user
                 post.save()
-                return redirect('blog:post_detail', pk=pk)
+                return redirect('blog:post_detail', id=id)
             
         form = PostForm(instance=post)
         context = {'form': form}
         return render(request, 'blog/create.html', context)
     
-    return redirect('blog:post_detail', pk=pk)
+    return redirect('blog:post_detail', id=id)
 
 
 @login_required
