@@ -23,6 +23,9 @@ class Category(models.Model):
         verbose_name = 'категория'
         verbose_name_plural = 'Категории'
 
+    def __str__(self):
+        return self.title
+    
 
 class Location(models.Model):
     name = models.CharField(max_length=256, verbose_name='Название места')
@@ -36,6 +39,9 @@ class Location(models.Model):
     class Meta:
         verbose_name = 'местоположение'
         verbose_name_plural = 'Местоположения'
+
+    def __str__(self):
+        return self.name
 
 
 class Post(models.Model):

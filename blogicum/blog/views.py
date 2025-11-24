@@ -79,8 +79,6 @@ def create_post(request, pk=None):
     if form.is_valid():
         post = form.save(commit=False)
         post.author = request.user
-        if post.pub_date > timezone.now():
-            post.is_published = False
         post.save()
         return redirect('blog:profile', username=request.user.username)
     context = {'form': form}
