@@ -85,5 +85,23 @@ def create_post(request, pk=None):
     return render(request, 'blog/create.html', context)
 
 
+def edit_post(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+    if post.author == request.user:
+        if request.POST:
+            form = PostForm(request.POST)
+            if form.is_valid():
+                post = form.save(commit=False)
+                post.author = request.user
+                post.save()
+                return redirect('blog:detail', pk=pk)
+            
+        form = PostForm(instance=post)
+        context = {'form': form}
+        return render(request, 'blog/create.html', context)
+    
+    return redirect('blog:detail', pk=pk)
+
+
 def edit_profile(request):
     pass
