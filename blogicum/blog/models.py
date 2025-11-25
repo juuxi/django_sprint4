@@ -81,7 +81,7 @@ class Post(models.Model):
     class Meta:
         verbose_name = 'публикация'
         verbose_name_plural = 'Публикации'
-        ordering = ('created_at',)
+        ordering = ('-pub_date',)
 
 
 class Comment(models.Model):
