@@ -77,7 +77,7 @@ def view_profile(request, username):
 
 @login_required
 def create_post(request, pk=None):
-    form = PostForm(request.POST or None)
+    form = PostForm(request.POST or None, files=request.FILES or None)
     if form.is_valid():
         post = form.save(commit=False)
         post.author = request.user
