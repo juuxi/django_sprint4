@@ -23,6 +23,8 @@ def index(request):
     post_list = Post.objects.filter(Q(category__is_published=True)
                                     & Q(is_published=True)
                                     & Q(pub_date__lte=datetime.now()))
+    for post in post_list:
+        post.comment_count = Comment.objects.filter(post=post).count()
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -33,11 +35,11 @@ def index(request):
 def post_detail(request, id):
     template = 'blog/detail.html'
     post = get_object_or_404(Post, pk=id)
-    if not post.is_published:
+    if not post.is_published and request.user != post.author:
         raise Http404
-    if not post.category.is_published:
+    if not post.category.is_published and request.user != post.author:
         raise Http404
-    if post.pub_date > timezone.now():
+    if post.pub_date > timezone.now() and request.user != post.author:
         raise Http404
     context = {'post': post}
     context['form'] = CommentForm()
@@ -54,6 +56,9 @@ def category_posts(request, category_slug):
                                     & Q(is_published=True)
                                     & Q(pub_date__lte=datetime.now()))
 
+
+    for post in post_list:
+        post.comment_count = Comment.objects.filter(post=post).count()
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -68,6 +73,9 @@ def view_profile(request, username):
     user_profile = get_object_or_404(User, username=username)
     post_list = Post.objects.filter(author=user_profile)
 
+
+    for post in post_list:
+        post.comment_count = Comment.objects.filter(post=post).count()
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -114,7 +122,6 @@ def add_comment(request, post_id):
         comment = form.save(commit=False)
         comment.author = request.user
         comment.post = post
-        post.comment_count = post.comment_count + 1
         comment.save()
     return redirect('blog:post_detail', id=post_id)
 
@@ -144,14 +151,21 @@ def delete_comment(request, post_id, comment_id):
     if comment.author == request.user:
         if request.method == 'POST':
             comment.delete()
-            post.comment_count = post.comment_count - 1
             return redirect('blog:post_detail', id=post_id)
     return render(request, 'blog/comment.html', context)
 
 
-class PostDeleteView(DeleteView):
+class PostDeleteView(LoginRequiredMixin, DeleteView):
     model = Post
     template_name = 'blog/create.html'
+    pk_url_kwarg = 'id'
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_superuser or user.is_staff:
+            return Post.objects.all()
+        return Post.objects.filter(author=user)
+    
     def get_success_url(self):
         return reverse_lazy('blog:profile', kwargs={'username': self.request.user.username})
 
