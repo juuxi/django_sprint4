@@ -25,7 +25,7 @@ class Category(models.Model):
 
     def __str__(self):
         return self.title
-    
+
 
 class Location(models.Model):
     name = models.CharField(max_length=256, verbose_name='Название места')
@@ -74,7 +74,7 @@ class Post(models.Model):
                                        'чтобы скрыть публикацию.')
     created_at = models.DateTimeField(auto_now_add=True,
                                       verbose_name='Добавлено')
-    
+
     image = models.ImageField('Фото', upload_to='post_images', blank=True)
 
     class Meta:
@@ -86,7 +86,7 @@ class Post(models.Model):
 class Comment(models.Model):
     text = models.TextField('Текст коммнетария')
     post = models.ForeignKey(
-        Post, 
+        Post,
         on_delete=models.CASCADE,
         related_name='comments',
     )

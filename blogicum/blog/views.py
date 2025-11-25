@@ -56,7 +56,6 @@ def category_posts(request, category_slug):
                                     & Q(is_published=True)
                                     & Q(pub_date__lte=datetime.now()))
 
-
     for post in post_list:
         post.comment_count = Comment.objects.filter(post=post).count()
     paginator = Paginator(post_list, 10)
@@ -72,7 +71,6 @@ def view_profile(request, username):
 
     user_profile = get_object_or_404(User, username=username)
     post_list = Post.objects.filter(author=user_profile)
-
 
     for post in post_list:
         post.comment_count = Comment.objects.filter(post=post).count()
@@ -106,11 +104,11 @@ def edit_post(request, id):
                 post.author = request.user
                 post.save()
                 return redirect('blog:post_detail', id=id)
-            
+
         form = PostForm(instance=post)
         context = {'form': form}
         return render(request, 'blog/create.html', context)
-    
+
     return redirect('blog:post_detail', id=id)
 
 
@@ -145,7 +143,6 @@ def edit_comment(request, post_id, comment_id):
 
 
 def delete_comment(request, post_id, comment_id):
-    post = get_object_or_404(Post, pk=post_id)
     comment = get_object_or_404(Comment, pk=comment_id)
     context = {'comment': comment}
     if comment.author == request.user:
@@ -165,16 +162,20 @@ class PostDeleteView(LoginRequiredMixin, DeleteView):
         if user.is_superuser or user.is_staff:
             return Post.objects.all()
         return Post.objects.filter(author=user)
-    
+
     def get_success_url(self):
-        return reverse_lazy('blog:profile', kwargs={'username': self.request.user.username})
+        return reverse_lazy('blog:profile',
+                            kwargs={'username': self.request.user.username})
 
 
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     model = User
     template_name = 'blog/user.html'
-    fields = ('first_name', 'last_name', 'username','email',)
+    fields = ('first_name', 'last_name', 'username', 'email',)
+
     def get_object(self, queryset=None):
         return self.request.user
+
     def get_success_url(self):
-        return reverse_lazy('blog:profile', kwargs={'username': self.request.user.username})
+        return reverse_lazy('blog:profile',
+                            kwargs={'username': self.request.user.username})
