@@ -6,7 +6,8 @@ from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
 from django.urls import reverse_lazy
 from django.contrib.auth.decorators import login_required
-from django.views.generic import DeleteView
+from django.views.generic import DeleteView, UpdateView
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from .models import Category, Post, Comment
 from .forms import PostForm, CommentForm
@@ -155,5 +156,11 @@ class PostDeleteView(DeleteView):
         return reverse_lazy('blog:profile', kwargs={'username': self.request.user.username})
 
 
-def edit_profile(request):
-    pass
+class ProfileUpdateView(LoginRequiredMixin, UpdateView):
+    model = User
+    template_name = 'blog/user.html'
+    fields = ('first_name', 'last_name', 'username','email',)
+    def get_object(self, queryset=None):
+        return self.request.user
+    def get_success_url(self):
+        return reverse_lazy('blog:profile', kwargs={'username': self.request.user.username})
