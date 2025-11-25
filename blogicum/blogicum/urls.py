@@ -17,6 +17,8 @@ from django.contrib import admin
 from django.urls import path, include, reverse_lazy
 from django.contrib.auth.forms import UserCreationForm
 from django.views.generic.edit import CreateView
+from django.conf.urls.static import static
+from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -34,7 +36,7 @@ urlpatterns = [
     path('posts/', include('blog.urls', namespace='blog')),
     path('category/', include('blog.urls', namespace='blog')),
     path('pages/', include('pages.urls', namespace='pages')),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) 
 
 handler404 = 'pages.views.page_not_found'
 handler500 = 'pages.views.server_internal_error'

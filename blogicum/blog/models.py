@@ -76,10 +76,12 @@ class Post(models.Model):
                                       verbose_name='Добавлено')
     
     image = models.ImageField('Фото', upload_to='post_images', blank=True)
+    comment_count = models.IntegerField(default=0)
 
     class Meta:
         verbose_name = 'публикация'
         verbose_name_plural = 'Публикации'
+        ordering = ('created_at',)
 
 
 class Comment(models.Model):

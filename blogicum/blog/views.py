@@ -106,20 +106,21 @@ def edit_post(request, id):
 
 
 @login_required
-def add_comment(request, id):
-    post = get_object_or_404(Post, id=id)
+def add_comment(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
     form = CommentForm(request.POST)
     if form.is_valid():
         comment = form.save(commit=False)
         comment.author = request.user
         comment.post = post
+        post.comment_count = post.comment_count + 1
         comment.save()
-    return redirect('blog:post_detail', id=id)
+    return redirect('blog:post_detail', id=post_id)
 
 
-def edit_comment(request, id, pk):
-    post = get_object_or_404(Post, id=id)
-    comment = get_object_or_404(Comment, pk=pk)
+def edit_comment(request, post_id, comment_id):
+    post = get_object_or_404(Post, id=post_id)
+    comment = get_object_or_404(Comment, pk=comment_id)
     if comment.author == request.user:
         if request.POST:
             form = CommentForm(request.POST, instance=comment)
@@ -128,20 +129,22 @@ def edit_comment(request, id, pk):
                 comment.author = request.user
                 comment.post = post
                 comment.save()
-                return redirect('blog:post_detail', id=id)
+                return redirect('blog:post_detail', id=post_id)
         form = CommentForm(instance=comment)
         context = {'form': form, 'comment': comment}
         return render(request, 'blog/comment.html', context)
-    return redirect('blog:post_detail', id=id)
+    return redirect('blog:post_detail', id=post_id)
 
 
-def delete_comment(request, id, pk):
-    comment = get_object_or_404(Comment, pk=pk)
+def delete_comment(request, post_id, comment_id):
+    post = get_object_or_404(Post, pk=post_id)
+    comment = get_object_or_404(Comment, pk=comment_id)
     context = {'comment': comment}
     if comment.author == request.user:
         if request.method == 'POST':
             comment.delete()
-            return redirect('blog:post_detail', id=id)
+            post.comment_count = post.comment_count - 1
+            return redirect('blog:post_detail', id=post_id)
     return render(request, 'blog/comment.html', context)
 
 
