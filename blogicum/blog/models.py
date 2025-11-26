@@ -79,6 +79,9 @@ class Post(TimeManagementAbstractModel):
         verbose_name_plural = 'Публикации'
         ordering = ('-pub_date',)
 
+    def __str__(self):
+        return self.title
+
 
 class Comment(models.Model):
     text = models.TextField('Текст коммнетария')
@@ -93,3 +96,6 @@ class Comment(models.Model):
 
     class Meta:
         ordering = ('created_at',)
+
+    def __str__(self):
+        return self.text
