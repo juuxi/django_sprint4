@@ -150,6 +150,3 @@ media/
 
 sent_emails/
 
-# миграции
-*migrations*
-
