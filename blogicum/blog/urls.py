@@ -6,14 +6,14 @@ app_name = 'blog'
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('posts/<int:id>/', views.post_detail, name='post_detail'),
+    path('posts/<int:post_id>/', views.post_detail, name='post_detail'),
     path('profile/edit/',
          views.ProfileUpdateView.as_view(), name='edit_profile'),
     path('profile/<str:username>/',
          views.view_profile, name='profile'),
     path('posts/create/', views.create_post, name='create_post'),
-    path('posts/<int:id>/edit/', views.edit_post, name='edit_post'),
-    path('posts/<int:id>/delete/',
+    path('posts/<int:post_id>/edit/', views.edit_post, name='edit_post'),
+    path('posts/<int:post_id>/delete/',
          views.PostDeleteView.as_view(), name='delete_post'),
     path('posts/<int:post_id>/comment/',
          views.add_comment, name='add_comment'),

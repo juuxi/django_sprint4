@@ -32,9 +32,9 @@ def index(request):
     return render(request, template, context)
 
 
-def post_detail(request, id):
+def post_detail(request, post_id):
     template = 'blog/detail.html'
-    post = get_object_or_404(Post, pk=id)
+    post = get_object_or_404(Post, pk=post_id)
     if not post.is_published and request.user != post.author:
         raise Http404
     if not post.category.is_published and request.user != post.author:
@@ -94,8 +94,8 @@ def create_post(request, pk=None):
     return render(request, 'blog/create.html', context)
 
 
-def edit_post(request, id):
-    post = get_object_or_404(Post, id=id)
+def edit_post(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
     if post.author == request.user:
         if request.POST:
             form = PostForm(request.POST, instance=post)
@@ -103,29 +103,29 @@ def edit_post(request, id):
                 post = form.save(commit=False)
                 post.author = request.user
                 post.save()
-                return redirect('blog:post_detail', id=id)
+                return redirect('blog:post_detail', post_id=post_id)
 
         form = PostForm(instance=post)
         context = {'form': form}
         return render(request, 'blog/create.html', context)
 
-    return redirect('blog:post_detail', id=id)
+    return redirect('blog:post_detail', post_id=post_id)
 
 
 @login_required
 def add_comment(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
+    post = get_object_or_404(Post, pk=post_id)
     form = CommentForm(request.POST)
     if form.is_valid():
         comment = form.save(commit=False)
         comment.author = request.user
         comment.post = post
         comment.save()
-    return redirect('blog:post_detail', id=post_id)
+    return redirect('blog:post_detail', post_id=post_id)
 
 
 def edit_comment(request, post_id, comment_id):
-    post = get_object_or_404(Post, id=post_id)
+    post = get_object_or_404(Post, pk=post_id)
     comment = get_object_or_404(Comment, pk=comment_id)
     if comment.author == request.user:
         if request.POST:
@@ -135,11 +135,11 @@ def edit_comment(request, post_id, comment_id):
                 comment.author = request.user
                 comment.post = post
                 comment.save()
-                return redirect('blog:post_detail', id=post_id)
+                return redirect('blog:post_detail', post_id=post_id)
         form = CommentForm(instance=comment)
         context = {'form': form, 'comment': comment}
         return render(request, 'blog/comment.html', context)
-    return redirect('blog:post_detail', id=post_id)
+    return redirect('blog:post_detail', post_id=post_id)
 
 
 def delete_comment(request, post_id, comment_id):
@@ -148,14 +148,14 @@ def delete_comment(request, post_id, comment_id):
     if comment.author == request.user:
         if request.method == 'POST':
             comment.delete()
-            return redirect('blog:post_detail', id=post_id)
+            return redirect('blog:post_detail', post_id=post_id)
     return render(request, 'blog/comment.html', context)
 
 
 class PostDeleteView(LoginRequiredMixin, DeleteView):
     model = Post
     template_name = 'blog/create.html'
-    pk_url_kwarg = 'id'
+    pk_url_kwarg = 'post_id'
 
     def get_queryset(self):
         user = self.request.user
