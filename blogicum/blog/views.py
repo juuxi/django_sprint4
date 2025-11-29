@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.http import Http404
 from django.utils import timezone
 from django.contrib.auth import get_user_model
@@ -18,13 +18,28 @@ from django.utils import timezone
 User = get_user_model()
 
 
+def posts_with_comment_count(filters):
+    posts = Post.objects.filter(
+            filters
+        ).annotate(
+            comment_count = Count(
+                'comments',
+                filter=(
+                    Q(comments__is_published=True)
+                )
+            )
+        ).order_by(*Post._meta.ordering)
+    return posts
+
+
 def index(request):
     template = 'blog/index.html'
-    post_list = Post.objects.filter(Q(category__is_published=True)
-                                    & Q(is_published=True)
-                                    & Q(pub_date__lte=datetime.now()))
-    for post in post_list:
-        post.comment_count = Comment.objects.filter(post=post).count()
+    post_list = posts_with_comment_count(
+        Q(category__is_published=True)
+        & Q(is_published=True)
+        & Q(pub_date__lte=datetime.now())
+        & Q(location__is_published=True)
+    )
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -52,12 +67,14 @@ def category_posts(request, category_slug):
     category = get_object_or_404(Category, slug=category_slug)
     if not category.is_published:
         raise Http404
-    post_list = Post.objects.filter(Q(category=category)
-                                    & Q(is_published=True)
-                                    & Q(pub_date__lte=datetime.now()))
+    post_list = posts_with_comment_count(
+        Q(category__is_published=True)
+        & Q(is_published=True)
+        & Q(pub_date__lte=datetime.now())
+        & Q(location__is_published=True)
+        & Q(category=category)
+    )
 
-    for post in post_list:
-        post.comment_count = Comment.objects.filter(post=post).count()
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -70,10 +87,8 @@ def view_profile(request, username):
     template = 'blog/profile.html'
 
     user_profile = get_object_or_404(User, username=username)
-    post_list = Post.objects.filter(author=user_profile)
+    post_list = posts_with_comment_count(Q(author=user_profile))
 
-    for post in post_list:
-        post.comment_count = Comment.objects.filter(post=post).count()
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
