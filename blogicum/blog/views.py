@@ -128,13 +128,12 @@ def create_post(request, pk=None):
 def edit_post(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
     if post.author == request.user:
-        if request.POST:
-            form = PostForm(request.POST, instance=post)
-            if form.is_valid():
-                post = form.save(commit=False)
-                post.author = request.user
-                post.save()
-                return redirect('blog:post_detail', post_id=post_id)
+        form = PostForm(request.POST or None, instance=post)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.author = request.user
+            post.save()
+            return redirect('blog:post_detail', post_id=post_id)
 
         form = PostForm(instance=post)
         context = {'form': form}
@@ -159,14 +158,14 @@ def edit_comment(request, post_id, comment_id):
     post = get_object_or_404(Post, pk=post_id)
     comment = get_object_or_404(Comment, pk=comment_id)
     if comment.author == request.user:
-        if request.POST:
-            form = CommentForm(request.POST, instance=comment)
-            if form.is_valid():
-                comment = form.save(commit=False)
-                comment.author = request.user
-                comment.post = post
-                comment.save()
-                return redirect('blog:post_detail', post_id=post_id)
+        form = CommentForm(request.POST or None, instance=comment)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.author = request.user
+            comment.post = post
+            comment.save()
+            return redirect('blog:post_detail', post_id=post_id)
+        
         form = CommentForm(instance=comment)
         context = {'form': form, 'comment': comment}
         return render(request, 'blog/comment.html', context)
