@@ -18,17 +18,29 @@ from django.utils import timezone
 User = get_user_model()
 
 
-def posts_with_comment_count(filters):
-    posts = Post.objects.filter(
-            filters
-        ).annotate(
-            comment_count = Count(
-                'comments',
-                filter=(
-                    Q(comments__is_published=True)
+def get_post_list_with_comment_count(filtrate=False, special_filters=None):
+    posts = Post.objects.select_related(
+        'author', 'category', 'location'
+    )
+    if filtrate:
+        posts = posts.filter(
+            Q(category__is_published=True)
+            & Q(is_published=True)
+            & Q(pub_date__lte=datetime.now())
+            & Q(location__is_published=True)
+        )
+    if special_filters:
+        posts = posts.filter(
+            special_filters
+        )
+    posts = posts.annotate(
+                comment_count = Count(
+                    'comments',
+                    filter=(
+                        Q(comments__is_published=True)
+                    )
                 )
-            )
-        ).order_by(*Post._meta.ordering)
+            ).order_by(*Post._meta.ordering)
     return posts
 
 
@@ -40,12 +52,9 @@ def get_paginator_page(request, posts):
 
 def index(request):
     template = 'blog/index.html'
-    post_list = posts_with_comment_count(
-        Q(category__is_published=True)
-        & Q(is_published=True)
-        & Q(pub_date__lte=datetime.now())
-        & Q(location__is_published=True)
-    )
+    post_list = get_post_list_with_comment_count(
+        filtrate=True
+        )
 
     page_obj = get_paginator_page(request=request, posts=post_list)
     context = {'page_obj': page_obj}
@@ -72,13 +81,10 @@ def category_posts(request, category_slug):
     category = get_object_or_404(Category, slug=category_slug)
     if not category.is_published:
         raise Http404
-    post_list = posts_with_comment_count(
-        Q(category__is_published=True)
-        & Q(is_published=True)
-        & Q(pub_date__lte=datetime.now())
-        & Q(location__is_published=True)
-        & Q(category=category)
-    )
+    post_list = get_post_list_with_comment_count(
+        filtrate=True,
+        special_filters=Q(category=category)
+        )
 
     page_obj = get_paginator_page(request=request, posts=post_list)
     context = {'category': category, 'post_list': post_list}
@@ -91,15 +97,15 @@ def view_profile(request, username):
 
     user_profile = get_object_or_404(User, username=username)
     if (request.user == user_profile):
-        post_list = posts_with_comment_count(Q(author=user_profile))
+        post_list = post_list = get_post_list_with_comment_count(
+            filtrate=False, 
+            special_filters=Q(author=user_profile)
+            )
     else:
-        post_list = posts_with_comment_count(
-            Q(category__is_published=True)
-            & Q(is_published=True)
-            & Q(pub_date__lte=datetime.now())
-            & Q(location__is_published=True)
-            & Q(author=user_profile)
-        )
+        post_list = get_post_list_with_comment_count(
+            filtrate=True, 
+            special_filters=Q(author=user_profile)
+            )
 
     page_obj = get_paginator_page(request=request, posts=post_list)
     context = {'page_obj': page_obj, 'profile': user_profile}
