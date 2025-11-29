@@ -90,7 +90,16 @@ def view_profile(request, username):
     template = 'blog/profile.html'
 
     user_profile = get_object_or_404(User, username=username)
-    post_list = posts_with_comment_count(Q(author=user_profile))
+    if (request.user == user_profile):
+        post_list = posts_with_comment_count(Q(author=user_profile))
+    else:
+        post_list = posts_with_comment_count(
+            Q(category__is_published=True)
+            & Q(is_published=True)
+            & Q(pub_date__lte=datetime.now())
+            & Q(location__is_published=True)
+            & Q(author=user_profile)
+        )
 
     page_obj = get_paginator_page(request=request, posts=post_list)
     context = {'page_obj': page_obj, 'profile': user_profile}
