@@ -9,11 +9,11 @@ from django.contrib.auth.decorators import login_required
 from django.views.generic import DeleteView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from .models import Category, Post, Comment
-from .forms import PostForm, CommentForm
-
 from datetime import datetime
 from django.utils import timezone
+
+from .models import Category, Post, Comment
+from .forms import PostForm, CommentForm
 
 User = get_user_model()
 
