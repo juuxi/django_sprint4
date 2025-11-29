@@ -34,13 +34,13 @@ def get_post_list_with_comment_count(filtrate=False, special_filters=None):
             special_filters
         )
     posts = posts.annotate(
-                comment_count = Count(
-                    'comments',
-                    filter=(
-                        Q(comments__is_published=True)
-                    )
-                )
-            ).order_by(*Post._meta.ordering)
+        comment_count=Count(
+            'comments',
+            filter=(
+                Q(comments__is_published=True)
+            )
+        )
+    ).order_by(*Post._meta.ordering)
     return posts
 
 
@@ -54,7 +54,7 @@ def index(request):
     template = 'blog/index.html'
     post_list = get_post_list_with_comment_count(
         filtrate=True
-        )
+    )
 
     page_obj = get_paginator_page(request=request, posts=post_list)
     context = {'page_obj': page_obj}
@@ -84,7 +84,7 @@ def category_posts(request, category_slug):
     post_list = get_post_list_with_comment_count(
         filtrate=True,
         special_filters=Q(category=category)
-        )
+    )
 
     page_obj = get_paginator_page(request=request, posts=post_list)
     context = {'category': category, 'post_list': post_list}
@@ -98,14 +98,14 @@ def view_profile(request, username):
     user_profile = get_object_or_404(User, username=username)
     if (request.user == user_profile):
         post_list = post_list = get_post_list_with_comment_count(
-            filtrate=False, 
+            filtrate=False,
             special_filters=Q(author=user_profile)
-            )
+        )
     else:
         post_list = get_post_list_with_comment_count(
-            filtrate=True, 
+            filtrate=True,
             special_filters=Q(author=user_profile)
-            )
+        )
 
     page_obj = get_paginator_page(request=request, posts=post_list)
     context = {'page_obj': page_obj, 'profile': user_profile}
@@ -165,7 +165,7 @@ def edit_comment(request, post_id, comment_id):
             comment.post = post
             comment.save()
             return redirect('blog:post_detail', post_id=post_id)
-        
+
         form = CommentForm(instance=comment)
         context = {'form': form, 'comment': comment}
         return render(request, 'blog/comment.html', context)
